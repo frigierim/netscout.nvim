@@ -1,0 +1,7 @@
+===============================================================================
+                                                                 *netscout.nvim*
+
+NetScout specific plugin used to run build commands from NeoVim.
+
+
+  vim:tw=78:ts=8:ft=help:norl:
