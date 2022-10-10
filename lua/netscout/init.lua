@@ -16,15 +16,17 @@ M.default_config = {
         compile = { cmdline = "compile.bat" },
         clean = { cmdline = "clean.bat" }
     },
-    remotes = {}
+    remotes = {},
+    target = ""
 }
 
 M.values = {
-    current_platform = "V5",
-    current_remote   = "172.27.13.133",
+    current_platform = "",
+    current_remote   = "",
     last_executed_command   = nil,
     current_terminal = nil,
-    terminals = {}
+    terminals = {},
+    current_dest = ""
 }
 
 M.pickPlatform = function()
@@ -39,7 +41,7 @@ M.pickPlatform = function()
     { prompt = "Select platform", },
     function(platform, _)
         if platform then
-            M.config.values = platform
+            M.values.current_platform = platform
         end
     end)
 end
@@ -51,23 +53,21 @@ M.pickRemote = function()
         for k,_ in pairs(M.config.remotes) do
             table.insert(remotes, k)
         end
-        print(vim.inspect(remotes))
         return remotes.join("\n")
     end
 
     vim.ui.input( { prompt = "Select remote: ",
     completion = 'custom, ListRemotes',
-    default = M.values.current_remote
-},
-function(remote)
-    if remote then
-        M.values.current_remote = remote
-        if M.config.remotes[remote] == nil then
-            table.insert(M.config.remotes, remote)
+    default = M.values.current_remote },
+    function(remote)
+        if remote then
+            M.values.current_remote = remote
+            if M.config.remotes[remote] == nil then
+                table.insert(M.config.remotes, remote)
+            end
         end
-    end
-end)
-vim.api.nvim_command('mode')
+    end)
+    vim.api.nvim_command('mode')
 end
 
 M.launchCommand = function()
@@ -98,6 +98,13 @@ end
 
 M.cycleTerminal = function()
     vim.api.nvim_command('FloatermNext ')
+end
+
+M.printStatus = function()
+    local platform = (M.values.current_platform:len() > 0) and M.values.current_platform or "No plat"
+    local remote = (M.values.current_remote:len() > 0) and M.values.current_remote or "No remote"
+    local dest = (M.values.current_dest:len() > 0) and M.values.current_dest or "No dest"
+    return "<" .. platform  .. "> [" .. remote .. "] " .. dest
 end
 
 M.setup = function(opts)
