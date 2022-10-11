@@ -16,18 +16,45 @@ M.default_config = {
         compile = { cmdline = "compile.bat" },
         clean = { cmdline = "clean.bat" }
     },
-    remotes = {},
-    target = ""
+    target = "",
+    scripts_folder = ""
 }
 
-M.values = {
+M.pathSeparator = function()
+     if (vim.loop.os_uname().sysname:find('Windows', 1, true) ~= nil) then
+        return "\\"
+    end
+    return '/'
+end
+
+M.default_values = {
     current_platform = "",
     current_remote   = "",
-    last_executed_command   = nil,
-    current_terminal = nil,
-    terminals = {},
-    current_dest = ""
+    remotes = {},
+    last_executed_command = nil,
+    current_dest = "",
+    destinations = {}
 }
+M.values = M.default_values
+
+
+local status_file = vim.fn.stdpath('state') .. M.pathSeparator() .. 'netscout.nvim.lua'
+
+local function loadStatus()
+    local test = io.open(status_file, "r")
+    if test ~= nil then
+        local contents = test:read "*a"
+        test:close()
+        M.values = require('netscout.utils').deserialize(contents)[1]
+    end
+end
+
+local function saveStatus()
+    local result, _ = require('netscout.utils').serialize(M.values)
+    local test = assert(io.open(status_file, "w"))
+    test:write(result)
+    test:close()
+end
 
 M.pickPlatform = function()
     local platforms = { M.values.current_platform }
@@ -42,6 +69,7 @@ M.pickPlatform = function()
     function(platform, _)
         if platform then
             M.values.current_platform = platform
+            saveStatus()
         end
     end)
 end
@@ -50,7 +78,7 @@ M.pickRemote = function()
 
     function ListRemotes(...)
         local remotes = {}
-        for k,_ in pairs(M.config.remotes) do
+        for k,_ in pairs(M.values.remotes) do
             table.insert(remotes, k)
         end
         return remotes.join("\n")
@@ -62,8 +90,34 @@ M.pickRemote = function()
     function(remote)
         if remote then
             M.values.current_remote = remote
-            if M.config.remotes[remote] == nil then
-                table.insert(M.config.remotes, remote)
+            if M.values.remotes[remote] == nil then
+                table.insert(M.values.remotes, remote)
+                saveStatus()
+            end
+        end
+    end)
+    vim.api.nvim_command('mode')
+end
+
+M.pickDest = function()
+
+    function ListDestinations(...)
+        local destinations = {}
+        for k,_ in pairs(M.values.destinations) do
+            table.insert(destinations, k)
+        end
+        return destinations.join("\n")
+    end
+
+    vim.ui.input( { prompt = "Select destination folder: ",
+    completion = 'custom, ListDestinations',
+    default = M.values.current_dest },
+    function(dest)
+        if dest then
+            M.values.current_dest = dest
+            if M.values.destinations[dest] == nil then
+                table.insert(M.values.destinations, dest)
+                saveStatus()
             end
         end
     end)
@@ -86,8 +140,16 @@ M.launchCommand = function()
     { prompt = "Select command:", },
     function(command, _)
         if command then
+            M.values.last_executed_command = command
+            saveStatus()
             local title = command:gsub("\"", "")
-            vim.api.nvim_command('FloatermNew --title="' .. title .. '_on_' .. M.values.current_platform .. '" --autoclose=0 ' .. M.config.commands[command].cmdline )
+            local command_line = M.config.scripts_folder .. M.pathSeparator() .. M.config.commands[command].cmdline ..
+                                 " \"" .. M.config.platforms[M.values.current_platform].builder .. "\" \"" ..  M.config.platforms[M.values.current_platform].folder .. "\" \"" ..  M.values.current_remote .. "\" \"" .. M.values.current_dest .. "\" \"" .. vim.fn.getcwd() .. "\" " ..
+                                 (M.config.commands[command].args or "")
+
+            --print("Generated command line: " .. command_line)
+
+            vim.api.nvim_command('FloatermNew --title="' .. title .. '_on_' .. M.values.current_platform .. '" --autoclose=0 ' .. command_line)
         end
     end)
 end
@@ -109,6 +171,7 @@ end
 
 M.setup = function(opts)
     M.config = opts or M.default_config
+    loadStatus()
 end
 
 return M
