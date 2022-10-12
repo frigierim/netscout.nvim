@@ -178,8 +178,8 @@ M.launchCommand = function()
             saveStatus()
             local title = command:gsub("\"", "")
             local command_line = M.config.scripts_folder .. M.pathSeparator() .. M.config.commands[command].cmdline ..
-                                 " \"" .. M.config.platforms[values.current_platform].builder .. "\" \"" ..  M.config.platforms[values.current_platform].folder .. "\" \"" ..  values.current_remote .. "\" \"" .. values.current_dest .. "\" \"" .. vim.fn.getcwd() .. "\" " ..
-                                 (M.config.commands[command].args or "")
+                                 " \"" .. M.config.platforms[values.current_platform].builder .. "\" \"" ..  M.config.platforms[values.current_platform].folder .. "\" \"" ..  values.current_remote .. "\" \"" .. values.current_dest .. "\" \"" .. vim.fn.getcwd() .. 
+                                 "\" \"" .. (M.config.commands[command].args or "") .. "\""
 
             --print("Generated command line: " .. command_line)
 
