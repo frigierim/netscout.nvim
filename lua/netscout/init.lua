@@ -180,10 +180,11 @@ M.launchCommand = function()
             local command_line = M.config.scripts_folder .. M.pathSeparator() .. M.config.commands[command].cmdline ..
                                  " \"" .. M.config.platforms[values.current_platform].builder .. "\" \"" ..  M.config.platforms[values.current_platform].folder .. "\" \"" ..  values.current_remote .. "\" \"" .. values.current_dest .. "\" \"" .. vim.fn.getcwd() .. 
                                  "\" \"" .. (M.config.commands[command].args or "") .. "\""
+            vim.api.nvim_command(':bot new')
+            vim.api.nvim_command('resize 16')
+            vim.api.nvim_command(':terminal ' .. command_line)
+            vim.api.nvim_command(':%')
 
-            --print("Generated command line: " .. command_line)
-
-            vim.api.nvim_command('FloatermNew --title="' .. title .. '_on_' .. values.current_platform .. '" --autoclose=0 ' .. command_line)
         end
     end)
 end
