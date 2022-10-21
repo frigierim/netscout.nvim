@@ -176,10 +176,16 @@ M.launchCommand = function()
         if command then
             values.last_executed_command = command
             saveStatus()
+
+            local make_args = M.config.platforms[values.current_platform].make_args or ""
+            if not M.config.commands[command].use_make_args then
+                make_args = ""
+            end
+
             local title = command:gsub("\"", "")
             local command_line = M.config.scripts_folder .. M.pathSeparator() .. M.config.commands[command].cmdline ..
                                  " \"" .. M.config.platforms[values.current_platform].builder .. "\" \"" ..  M.config.platforms[values.current_platform].folder .. "\" \"" ..  values.current_remote .. "\" \"" .. values.current_dest .. "\" \"" .. vim.fn.getcwd() .. 
-                                 "\" \"" .. (M.config.commands[command].args or "") .. "\""
+                                 "\" \"" .. (M.config.commands[command].args or "") .. " " ..  make_args .. "\""
             vim.api.nvim_command(':bot new')
             vim.api.nvim_command('resize 16')
             vim.api.nvim_command(':terminal ' .. command_line)
