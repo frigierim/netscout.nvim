@@ -177,7 +177,7 @@ M.launchCommand = function()
             values.last_executed_command = command
             saveStatus()
 
-            if values.current_platform and values.current_remote and values.current_dest and M.config.platforms[valuse.current_platform] then
+            if values.current_platform and values.current_remote and values.current_dest and M.config.platforms[values.current_platform] then
             
                 local make_args = M.config.platforms[values.current_platform].make_args or ""
                 if not M.config.commands[command].use_make_args then
