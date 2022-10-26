@@ -177,20 +177,31 @@ M.launchCommand = function()
             values.last_executed_command = command
             saveStatus()
 
-            local make_args = M.config.platforms[values.current_platform].make_args or ""
-            if not M.config.commands[command].use_make_args then
-                make_args = ""
-            end
+            if values.current_platform and values.current_remote and values.current_dest and M.config.platforms[valuse.current_platform] then
+            
+                local make_args = M.config.platforms[values.current_platform].make_args or ""
+                if not M.config.commands[command].use_make_args then
+                    make_args = ""
+                end
 
-            local title = command:gsub("\"", "")
-            local command_line = M.config.scripts_folder .. M.pathSeparator() .. M.config.commands[command].cmdline ..
+                local title = command:gsub("\"", "")
+            
+                local command_line = M.config.scripts_folder .. M.pathSeparator() .. M.config.commands[command].cmdline ..
                                  " \"" .. M.config.platforms[values.current_platform].builder .. "\" \"" ..  M.config.platforms[values.current_platform].folder .. "\" \"" ..  values.current_remote .. "\" \"" .. values.current_dest .. "\" \"" .. vim.fn.getcwd() .. 
                                  "\" \"" .. (M.config.commands[command].args or "") .. " " ..  make_args .. "\""
-            vim.api.nvim_command(':bot new')
-            vim.api.nvim_command('resize 16')
-            vim.api.nvim_command(':terminal ' .. command_line)
-            vim.api.nvim_command(':%')
+                vim.api.nvim_command(':bot new')
+                vim.api.nvim_command('resize 16')
+                vim.api.nvim_command(':terminal ' .. command_line)
+                vim.api.nvim_command(':%')
+            else
+                require('plenary.popup').create("    Error, missing parameters. Please set platform, remote and destination.", {
+                  line = 0,
+                  col = 0,
+                  width = 80,
+                  border = {}
+                })
 
+            end
         end
     end)
 end
