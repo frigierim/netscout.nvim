@@ -193,6 +193,7 @@ M.launchCommand = function()
                 vim.api.nvim_command('resize 16')
                 vim.api.nvim_command(':terminal ' .. command_line)
                 vim.api.nvim_command(':%')
+                vim.api.nvim_command(':wincmd k')
             else
                 require('plenary.popup').create("    Error, missing parameters. Please set platform, remote and destination.", {
                   line = 0,
