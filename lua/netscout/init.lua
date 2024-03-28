@@ -199,6 +199,7 @@ M.launchCommand = function()
                   line = 0,
                   col = 0,
                   width = 80,
+                  time = 5000,
                   border = {}
                 })
 
